@@ -205,4 +205,3 @@ function UpdateRender(time) {
     requestAnimationFrame(UpdateRender);
 }
 UpdateRender();
-// requestAnimationFrame(UpdateRender);
