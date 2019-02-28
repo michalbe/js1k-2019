@@ -76,104 +76,84 @@ let RayCamera_fov = Math.PI * 0.4,
     RayCamera_p = { x: 0, y: 0 },
     RayCamera_dir = Math.PI * 0.5;
 
-
-let RayCamera_spacing = RayCamera_width / RayCamera_resolution;
-
 function RayCamera_Rotate(angle) {
     RayCamera_dir = (RayCamera_dir + angle + CIRCLE) % (CIRCLE);
 }
 
 // The Render Engine
 // ==============================
-function RaycastRenderer(options) {
-    this.width = 640;
-    this.height = 360;
-    this.resolution = 28;
+let RaycastRenderer_domElement = document.getElementById('canvas');
 
-    Object.assign(this, options);
+let RaycastRenderer_width = 640,
+    RaycastRenderer_height = 360,
+    RaycastRenderer_resolution = 28,
+    RaycastRenderer_ctx = RaycastRenderer_domElement.getContext('2d'),
+    RaycastRenderer_spacing = RaycastRenderer_width / RaycastRenderer_resolution;
 
-    this.domElement.width = this.width;
-    this.domElement.height = this.height;
-    this.ctx = this.domElement.getContext('2d');
-    this.spacing = this.width / this.resolution;
-}
+RaycastRenderer_domElement.width = this.width;
+RaycastRenderer_domElement.height = this.height;
 
-RaycastRenderer.prototype = {
-    __project(height, angle, distance) {
-        var z = distance * Math.cos(angle);
-        var wallHeight = this.height * height / z;
-        var bottom = this.height / 2 * (1 + 1 / z);
-        return {
-            top: bottom - wallHeight,
-            height: wallHeight
-        };
-    },
+function RaycastRenderer___project(height, angle, distance) {
+    var z = distance * Math.cos(angle);
+    var wallHeight = RaycastRenderer_height * height / z;
+    var bottom = RaycastRenderer_height / 2 * (1 + 1 / z);
+    return {
+        top: bottom - wallHeight,
+        height: wallHeight
+    };
+};
 
-    __drawColumn(column, ray, angle) {
-        var left = ~~(column * this.spacing);
-        var width = Math.ceil(this.spacing);
-        var hit = -1;
+function RaycastRenderer___drawColumn(column, ray, angle) {
+    var left = ~~(column * RaycastRenderer_spacing);
+    var width = Math.ceil(RaycastRenderer_spacing);
+    var hit = -1;
 
-        while (++hit < ray.length && ray[hit].cell <= 0);
+    while (++hit < ray.length && ray[hit].cell <= 0);
 
-        // var texture;
-        // var textureX = 0;
-        if (hit < ray.length) {
-            this.ctx.save();
-            // TODO: Deal with transparent walls here somehow
-            var step = ray[hit];
-            const letter = wall_text[column % wall_text.length];
-            var wall = this.__project(1, angle, step.distance);
+    if (hit < ray.length) {
+        RaycastRenderer_ctx.save();
+        var step = ray[hit];
+        const letter = wall_text[column % wall_text.length];
+        var wall = RaycastRenderer___project(1, angle, step.distance);
 
-            this.ctx.globalAlpha = 1;
+        RaycastRenderer_ctx.globalAlpha = 1;
 
-            const alpha = 1 - Math.max((step.distance + step.shading) / RayCamera_lightRange, 0);
-            this.ctx.fillStyle = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + alpha + ')';
+        const alpha = 1 - Math.max((step.distance + step.shading) / RayCamera_lightRange, 0);
+        RaycastRenderer_ctx.fillStyle = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + alpha + ')';
 
-            ctx.font = wall.height + 'px Arial';
-            const metrics = this.ctx.measureText(letter);
-            const text_width = metrics.width;
-            const scale = width / text_width;
-            this.ctx.scale(scale, 1);
-            ctx.fillText(letter, left / scale, wall.top + wall.height);
-            this.ctx.restore();
-        }
-    },
-
-    __drawColumns() {
-        this.ctx.save();
-        for (var col = 0; col < this.resolution; col++) {
-            var angle = RayCamera_fov * (col / this.resolution - 0.5);
-            var ray = RayMap_Raycast(RayCamera_p, RayCamera_dir + angle, RayCamera_range);
-            this.__drawColumn(col, ray, angle);
-        }
-        this.ctx.restore();
-    },
-
-    Render() {
-        this.__drawColumns();
-    },
-
-    Raycast(point, angle, range) {
-            return RayMap_Raycast(point, angle, range);
-        return [];
+        RaycastRenderer_ctx.font = wall.height + 'px Arial';
+        const metrics = RaycastRenderer_ctx.measureText(letter);
+        const text_width = metrics.width;
+        const scale = width / text_width;
+        RaycastRenderer_ctx.scale(scale, 1);
+        RaycastRenderer_ctx.fillText(letter, left / scale, wall.top + wall.height);
+        RaycastRenderer_ctx.restore();
     }
 };
+
+function RaycastRenderer___drawColumns() {
+    RaycastRenderer_ctx.save();
+    for (var col = 0; col < RaycastRenderer_resolution; col++) {
+        var angle = RayCamera_fov * (col / RaycastRenderer_resolution - 0.5);
+        var ray = RayMap_Raycast(RayCamera_p, RayCamera_dir + angle, RayCamera_range);
+        RaycastRenderer___drawColumn(col, ray, angle);
+    }
+    RaycastRenderer_ctx.restore();
+};
+
+function RaycastRenderer_Render() {
+    RaycastRenderer___drawColumns();
+};
+
+function RaycastRenderer_Raycast(point, angle, range) {
+    return RayMap_Raycast(point, angle, range);
+}
 
 // Raycast Demo code
 // ==================
 // Controls and player object modified from same thing
 // as the Raycast Engine
 // ======================
-
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
-
-var renderer = new RaycastRenderer({
-    width: 640,
-    height: 360,
-    domElement: canvas
-});
 
 function Controls() {
     this.codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' };
@@ -223,7 +203,7 @@ function UpdateRender(time) {
     if (seconds < 0.2) {
         update(controls.states, seconds);
         canvas.width = canvas.width;
-        renderer.Render();
+        RaycastRenderer_Render();
     }
     requestAnimationFrame(UpdateRender);
 }
