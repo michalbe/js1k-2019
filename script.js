@@ -1,7 +1,6 @@
 var CIRCLE = Math.PI * 2;
 const wall_text = 'JS1K';
 
-let color = [0, 255, 0];
 let i = -1;
 let RayMap_walls = "e13wtdmn7n079tsf7qy20naz7gcepyazc0z1tcvvautqjrrrax1ppc9rbcytdccxd33098ltc02ythhxcevfb01r"
     .split('')
@@ -24,7 +23,7 @@ function RayMap_Get(x, y) {
     return RayMap_walls[y * RayMap_width + x];
 };
 
-function RayMap_Raycast(point, angle, range, fullRange = false) {
+function RayMap_Raycast(point, angle, range) {
     var cells = [];
     var sin = Math.sin(angle);
     var cos = Math.cos(angle);
@@ -33,13 +32,13 @@ function RayMap_Raycast(point, angle, range, fullRange = false) {
     nextStep = { x: point.x, y: point.y, cell: 0, distance: 0 };
     do {
         cells.push(nextStep);
-        if (!fullRange && nextStep.cell > 0)
+        if (nextStep.cell > 0)
             break;
         stepX = RayMap___step(sin, cos, nextStep.x, nextStep.y);
         stepY = RayMap___step(cos, sin, nextStep.y, nextStep.x, true);
         nextStep = stepX.length2 < stepY.length2
-            ? RayMap___inspect(stepX, 1, 0, nextStep.distance, stepX.y, cos, sin)
-            : RayMap___inspect(stepY, 0, 1, nextStep.distance, stepY.x, cos, sin);
+            ? RayMap___inspect(stepX, 1, 0, nextStep.distance, cos, sin)
+            : RayMap___inspect(stepY, 0, 1, nextStep.distance, cos, sin);
     } while (nextStep.distance <= range);
 
     return cells;
@@ -56,14 +55,13 @@ function RayMap___step(rise, run, x, y, inverted) {
     };
 };
 
-function RayMap___inspect(step, shiftX, shiftY, distance, offset, cos, sin) {
+function RayMap___inspect(step, shiftX, shiftY, distance, cos, sin) {
     var dx = cos < 0 ? shiftX : 0;
     var dy = sin < 0 ? shiftY : 0;
     var index = (((step.y - dy) | 0) * RayMap_width) + ((step.x - dx) | 0);
     step.cell = (index < 0 || index >= RayMap_walls.length) ? -1 : RayMap_walls[index];
     step.distance = distance + Math.sqrt(step.length2);
-    step.shading = 0;
-    step.offset = offset - (offset | 0);
+    // step.offset = offset - (offset | 0);
     return step;
 };
 
@@ -84,11 +82,7 @@ let RaycastRenderer_height = 10,
 function RaycastRenderer___project(height, angle, distance) {
     var z = distance * Math.cos(angle);
     var wallHeight = RaycastRenderer_height * height / z;
-    var bottom = RaycastRenderer_height / 2 * (1 + 1 / z);
-    return {
-        top: bottom - wallHeight,
-        height: wallHeight
-    };
+    return wallHeight;
 };
 
 function RaycastRenderer___drawColumn(column, ray, angle) {
@@ -99,9 +93,9 @@ function RaycastRenderer___drawColumn(column, ray, angle) {
     if (hit < ray.length) {
         var step = ray[hit];
         var wall = RaycastRenderer___project(1, angle, step.distance);
-        const alpha = 1 - Math.max((step.distance + step.shading) / RayCamera_lightRange, 0);
+        const alpha = 1 - Math.max((step.distance) / RayCamera_lightRange, 0);
         els[column].style.opacity = alpha;
-        els[column].style.transform = 'scaleY(' + wall.height + ')';
+        els[column].style.transform = 'scaleY(' + wall + ')';
     }
 };
 
@@ -123,8 +117,8 @@ function RaycastRenderer_Raycast(point, angle, range) {
 
 let Controls_codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' },
     Controls_states = { 'l': false, 'r': false, 'f': false, 'b': false };
-document.onkeydown = Controls_onKey.bind(this, true);
-document.onkeyup = Controls_onKey.bind(this, false);
+d.onkeydown = Controls_onKey.bind(this, true);
+d.onkeyup = Controls_onKey.bind(this, false);
 
 
 function Controls_onKey(val, e) {
@@ -161,11 +155,10 @@ let str = '';
 for (let i = 0; i < RaycastRenderer_resolution; i++) {
     str += '<span>' + wall_text[i % wall_text.length] + '</span>';
 }
-document.body.innerHTML = str;
-let els = document.querySelectorAll('span');
+b.innerHTML = str;
+let els = d.querySelectorAll('span');
 
 var lastTime = 0;
-var mapPos = { x: -44, y: -44 };
 function UpdateRender(time) {
     var seconds = (time - lastTime) / 1000;
     lastTime = time;
