@@ -1,7 +1,7 @@
 var CIRCLE = Math.PI * 2;
 const wall_text = 'JS1K';
 
-let color = [~~(Math.random() * 255), ~~(Math.random() * 255), ~~(Math.random() * 255)];
+let color = [0, 255, 0];
 let i = -1;
 let RayMap_walls = "e13wtdmn7n079tsf7qy20naz7gcepyazc0z1tcvvautqjrrrax1ppc9rbcytdccxd33098ltc02ythhxcevfb01r"
     .split('')
@@ -90,8 +90,8 @@ let RaycastRenderer_width = 640,
     RaycastRenderer_ctx = RaycastRenderer_domElement.getContext('2d'),
     RaycastRenderer_spacing = RaycastRenderer_width / RaycastRenderer_resolution;
 
-RaycastRenderer_domElement.width = this.width;
-RaycastRenderer_domElement.height = this.height;
+RaycastRenderer_domElement.width = RaycastRenderer_width;
+RaycastRenderer_domElement.height = RaycastRenderer_height;
 
 function RaycastRenderer___project(height, angle, distance) {
     var z = distance * Math.cos(angle);
@@ -155,20 +155,17 @@ function RaycastRenderer_Raycast(point, angle, range) {
 // as the Raycast Engine
 // ======================
 
-function Controls() {
-    this.codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' };
-    this.states = { 'l': false, 'r': false, 'f': false, 'b': false };
-    document.addEventListener('keydown', this.onKey.bind(this, true), false);
-    document.addEventListener('keyup', this.onKey.bind(this, false), false);
-}
+let Controls_codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' },
+    Controls_states = { 'l': false, 'r': false, 'f': false, 'b': false };
+document.addEventListener('keydown', Controls_onKey.bind(this, true), false);
+document.addEventListener('keyup', Controls_onKey.bind(this, false), false);
 
-Controls.prototype.onKey = function (val, e) {
-    var state = this.codes[e.keyCode];
+
+function Controls_onKey (val, e) {
+    var state = Controls_codes[e.keyCode];
     if (!state) return;
-    this.states[state] = val;
+    Controls_states[state] = val;
 };
-
-var controls = new Controls();
 
 var p = { x: 2.8, y: 3.7 },
     dir = Math.PI * 0.3,
@@ -184,11 +181,11 @@ var p = { x: 2.8, y: 3.7 },
         RayCamera_p.x = p.x;
         RayCamera_p.y = p.y;
     },
-    update = (controls, seconds) => {
-        if (controls['l']) rot(-Math.PI * seconds);
-        if (controls['r']) rot(Math.PI * seconds);
-        if (controls['f']) walk(3 * seconds);
-        if (controls['b']) walk(-3 * seconds);
+    update = (seconds) => {
+        if (Controls_states['l']) rot(-Math.PI * seconds);
+        if (Controls_states['r']) rot(Math.PI * seconds);
+        if (Controls_states['f']) walk(3 * seconds);
+        if (Controls_states['b']) walk(-3 * seconds);
     }
 
 RayCamera_dir = dir;
@@ -201,7 +198,7 @@ function UpdateRender(time) {
     var seconds = (time - lastTime) / 1000;
     lastTime = time;
     if (seconds < 0.2) {
-        update(controls.states, seconds);
+        update(seconds);
         canvas.width = canvas.width;
         RaycastRenderer_Render();
     }
