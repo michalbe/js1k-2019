@@ -1,95 +1,94 @@
 var CIRCLE = Math.PI * 2;
 const wall_text = 'JS1K';
+
 let color = [~~(Math.random() * 255), ~~(Math.random() * 255), ~~(Math.random() * 255)];
-function RayMap(options) {
-    this.walls = [];
-    this.light = 1;
-    this.width = 0;
-    this.height = 0;
-    this.outdoors = false;
+let i = -1;
+let RayMap_walls = "e13wtdmn7n079tsf7qy20naz7gcepyazc0z1tcvvautqjrrrax1ppc9rbcytdccxd33098ltc02ythhxcevfb01r"
+    .split('')
+    .reduce((memo, curr, index) => {
+        memo[i]
+        if (index % 8 === 0) {
+            i++;
+            memo[i] = '';
+        }
+        memo[i] += curr;
+        return memo;
+    }, []).map((e) => parseInt(e, 36).toString(2)).join('').split(''),
+    RayMap_light = 2,
+    RayMap_width = 20,
+    RayMap_height = 22,
+    RayMap_outdoors = false;
 
-    Object.assign(this, options);
-}
-
-RayMap.prototype = {
-    Get(x, y) {
-        x = x | 0;
-        y = y | 0;
-        if (x < 0 || x >= this.width || y < 0 || y >= this.height) return -1;
-        return this.walls[y * this.width + x];
-    },
-
-    Raycast(point, angle, range, fullRange = false) {
-        var cells = [];
-        var sin = Math.sin(angle);
-        var cos = Math.cos(angle);
-
-        var stepX, stepY, nextStep;
-        nextStep = { x: point.x, y: point.y, cell: 0, distance: 0 };
-        do {
-            cells.push(nextStep);
-            if (!fullRange && nextStep.cell > 0)
-                break;
-            stepX = this.__step(sin, cos, nextStep.x, nextStep.y);
-            stepY = this.__step(cos, sin, nextStep.y, nextStep.x, true);
-            nextStep = stepX.length2 < stepY.length2
-                ? this.__inspect(stepX, 1, 0, nextStep.distance, stepX.y, cos, sin)
-                : this.__inspect(stepY, 0, 1, nextStep.distance, stepY.x, cos, sin);
-        } while (nextStep.distance <= range);
-
-        return cells;
-    },
-
-    __step(rise, run, x, y, inverted) {
-        if (run === 0) return { length2: Infinity };
-        var dx = run > 0 ? ~~(x + 1) - x : Math.ceil(x - 1) - x;
-        var dy = dx * rise / run;
-        return {
-            x: inverted ? y + dy : x + dx,
-            y: inverted ? x + dx : y + dy,
-            length2: dx * dx + dy * dy
-        };
-    },
-
-    __inspect(step, shiftX, shiftY, distance, offset, cos, sin) {
-        var dx = cos < 0 ? shiftX : 0;
-        var dy = sin < 0 ? shiftY : 0;
-        var index = (((step.y - dy) | 0) * this.width) + ((step.x - dx) | 0);
-        step.cell = (index < 0 || index >= this.walls.length) ? -1 : this.walls[index];
-        step.distance = distance + Math.sqrt(step.length2);
-        step.shading = 0;
-        step.offset = offset - (offset | 0);
-        return step;
-    }
+function RayMap_Get(x, y) {
+    x = x | 0;
+    y = y | 0;
+    if (x < 0 || x >= RayMap_width || y < 0 || y >= RayMap_height) return -1;
+    return RayMap_walls[y * RayMap_width + x];
 };
 
-// The Camera
-// ==========================
-function RayCamera(options) {
-    this.fov = Math.PI * 0.4;
-    this.range = 14;
-    this.lightRange = 5;
-    this.p = { x: 0, y: 0 };
-    this.dir = Math.PI * 0.5;
+function RayMap_Raycast(point, angle, range, fullRange = false) {
+    var cells = [];
+    var sin = Math.sin(angle);
+    var cos = Math.cos(angle);
 
-    Object.assign(this, options);
+    var stepX, stepY, nextStep;
+    nextStep = { x: point.x, y: point.y, cell: 0, distance: 0 };
+    do {
+        cells.push(nextStep);
+        if (!fullRange && nextStep.cell > 0)
+            break;
+        stepX = RayMap___step(sin, cos, nextStep.x, nextStep.y);
+        stepY = RayMap___step(cos, sin, nextStep.y, nextStep.x, true);
+        nextStep = stepX.length2 < stepY.length2
+            ? RayMap___inspect(stepX, 1, 0, nextStep.distance, stepX.y, cos, sin)
+            : RayMap___inspect(stepY, 0, 1, nextStep.distance, stepY.x, cos, sin);
+    } while (nextStep.distance <= range);
 
-    this.spacing = this.width / this.resolution;
-}
-
-RayCamera.prototype = {
-    Rotate: (angle) => {
-        this.dir = (this.dir + angle + CIRCLE) % (CIRCLE);
-    }
+    return cells;
 };
+
+function RayMap___step(rise, run, x, y, inverted) {
+    if (run === 0) return { length2: Infinity };
+    var dx = run > 0 ? ~~(x + 1) - x : Math.ceil(x - 1) - x;
+    var dy = dx * rise / run;
+    return {
+        x: inverted ? y + dy : x + dx,
+        y: inverted ? x + dx : y + dy,
+        length2: dx * dx + dy * dy
+    };
+};
+
+function RayMap___inspect(step, shiftX, shiftY, distance, offset, cos, sin) {
+    var dx = cos < 0 ? shiftX : 0;
+    var dy = sin < 0 ? shiftY : 0;
+    var index = (((step.y - dy) | 0) * RayMap_width) + ((step.x - dx) | 0);
+    step.cell = (index < 0 || index >= RayMap_walls.length) ? -1 : RayMap_walls[index];
+    step.distance = distance + Math.sqrt(step.length2);
+    step.shading = 0;
+    step.offset = offset - (offset | 0);
+    return step;
+};
+
+
+let RayCamera_fov = Math.PI * 0.4,
+    RayCamera_range = 14,
+    RayCamera_lightRange = 5,
+    RayCamera_p = { x: 0, y: 0 },
+    RayCamera_dir = Math.PI * 0.5;
+
+
+let RayCamera_spacing = RayCamera_width / RayCamera_resolution;
+
+function RayCamera_Rotate(angle) {
+    RayCamera_dir = (RayCamera_dir + angle + CIRCLE) % (CIRCLE);
+}
 
 // The Render Engine
 // ==============================
 function RaycastRenderer(options) {
     this.width = 640;
     this.height = 360;
-    this.resolution = 30;
-    this.domElement = document.createElement('canvas');
+    this.resolution = 28;
 
     Object.assign(this, options);
 
@@ -110,7 +109,7 @@ RaycastRenderer.prototype = {
         };
     },
 
-    __drawColumn(column, ray, angle, camera) {
+    __drawColumn(column, ray, angle) {
         var left = ~~(column * this.spacing);
         var width = Math.ceil(this.spacing);
         var hit = -1;
@@ -128,7 +127,7 @@ RaycastRenderer.prototype = {
 
             this.ctx.globalAlpha = 1;
 
-            const alpha = 1 - Math.max((step.distance + step.shading) / camera.lightRange, 0);
+            const alpha = 1 - Math.max((step.distance + step.shading) / RayCamera_lightRange, 0);
             this.ctx.fillStyle = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + alpha + ')';
 
             ctx.font = wall.height + 'px Arial';
@@ -141,23 +140,22 @@ RaycastRenderer.prototype = {
         }
     },
 
-    __drawColumns(camera, map) {
+    __drawColumns() {
         this.ctx.save();
         for (var col = 0; col < this.resolution; col++) {
-            var angle = camera.fov * (col / this.resolution - 0.5);
-            var ray = map.Raycast(camera.p, camera.dir + angle, camera.range);
-            this.__drawColumn(col, ray, angle, camera);
+            var angle = RayCamera_fov * (col / this.resolution - 0.5);
+            var ray = RayMap_Raycast(RayCamera_p, RayCamera_dir + angle, RayCamera_range);
+            this.__drawColumn(col, ray, angle);
         }
         this.ctx.restore();
     },
 
-    Render(camera, map) {
-        this.__drawColumns(camera, map);
+    Render() {
+        this.__drawColumns();
     },
 
     Raycast(point, angle, range) {
-        if (this.map)
-            return this.map.Raycast(point, angle, range);
+            return RayMap_Raycast(point, angle, range);
         return [];
     }
 };
@@ -170,28 +168,6 @@ RaycastRenderer.prototype = {
 
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
-
-let i = -1;
-var map = new RayMap({
-    width: 20,
-    height: 22,
-    light: 2,
-    walls:
-        "e13wtdmn7n079tsf7qy20naz7gcepyazc0z1tcvvautqjrrrax1ppc9rbcytdccxd33098ltc02ythhxcevfb01r"
-        .split('')
-        .reduce((memo, curr, index) => {
-            memo[i]
-            if (index % 8 === 0) {
-                i++;
-                memo[i] = '';
-            }
-            memo[i] += curr;
-            return memo;
-        }, []).map((e) => parseInt(e, 36).toString(2)).join('').split('')
-});
-
-
-var camera = new RayCamera();
 
 var renderer = new RaycastRenderer({
     width: 640,
@@ -218,26 +194,26 @@ var p = { x: 2.8, y: 3.7 },
     dir = Math.PI * 0.3,
     rot = (angle) => {
         dir = (dir + angle + CIRCLE) % (CIRCLE);
-        camera.dir = dir;
+        RayCamera_dir = dir;
     },
-    walk = (distance, map) => {
+    walk = (distance) => {
         var dx = Math.cos(dir) * distance;
         var dy = Math.sin(dir) * distance;
-        if (map.Get(p.x + dx, p.y) <= 0) p.x += dx;
-        if (map.Get(p.x, p.y + dy) <= 0) p.y += dy;
-        camera.p.x = p.x;
-        camera.p.y = p.y;
+        if (RayMap_Get(p.x + dx, p.y) <= 0) p.x += dx;
+        if (RayMap_Get(p.x, p.y + dy) <= 0) p.y += dy;
+        RayCamera_p.x = p.x;
+        RayCamera_p.y = p.y;
     },
-    update = (controls, map, seconds) => {
+    update = (controls, seconds) => {
         if (controls['l']) rot(-Math.PI * seconds);
         if (controls['r']) rot(Math.PI * seconds);
-        if (controls['f']) walk(3 * seconds, map);
-        if (controls['b']) walk(-3 * seconds, map);
+        if (controls['f']) walk(3 * seconds);
+        if (controls['b']) walk(-3 * seconds);
     }
 
-camera.dir = dir;
-camera.p.x = p.x;
-camera.p.y = p.y;
+RayCamera_dir = dir;
+RayCamera_p.x = p.x;
+RayCamera_p.y = p.y;
 
 var lastTime = 0;
 var mapPos = { x: -44, y: -44 };
@@ -245,9 +221,9 @@ function UpdateRender(time) {
     var seconds = (time - lastTime) / 1000;
     lastTime = time;
     if (seconds < 0.2) {
-        update(controls.states, map, seconds);
+        update(controls.states, seconds);
         canvas.width = canvas.width;
-        renderer.Render(camera, map);
+        renderer.Render();
     }
     requestAnimationFrame(UpdateRender);
 }
