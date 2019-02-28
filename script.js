@@ -14,10 +14,8 @@ let RayMap_walls = "e13wtdmn7n079tsf7qy20naz7gcepyazc0z1tcvvautqjrrrax1ppc9rbcyt
         memo[i] += curr;
         return memo;
     }, []).map((e) => parseInt(e, 36).toString(2)).join('').split(''),
-    RayMap_light = 2,
     RayMap_width = 20,
-    RayMap_height = 22,
-    RayMap_outdoors = false;
+    RayMap_height = 22;
 
 function RayMap_Get(x, y) {
     x = x | 0;
@@ -80,18 +78,8 @@ function RayCamera_Rotate(angle) {
     RayCamera_dir = (RayCamera_dir + angle + CIRCLE) % (CIRCLE);
 }
 
-// The Render Engine
-// ==============================
-let RaycastRenderer_domElement = document.getElementById('canvas');
-
-let RaycastRenderer_width = 640,
-    RaycastRenderer_height = 360,
-    RaycastRenderer_resolution = 28,
-    RaycastRenderer_ctx = RaycastRenderer_domElement.getContext('2d'),
-    RaycastRenderer_spacing = RaycastRenderer_width / RaycastRenderer_resolution;
-
-RaycastRenderer_domElement.width = RaycastRenderer_width;
-RaycastRenderer_domElement.height = RaycastRenderer_height;
+let RaycastRenderer_height = 10,
+    RaycastRenderer_resolution = 28;
 
 function RaycastRenderer___project(height, angle, distance) {
     var z = distance * Math.cos(angle);
@@ -104,41 +92,25 @@ function RaycastRenderer___project(height, angle, distance) {
 };
 
 function RaycastRenderer___drawColumn(column, ray, angle) {
-    var left = ~~(column * RaycastRenderer_spacing);
-    var width = Math.ceil(RaycastRenderer_spacing);
     var hit = -1;
 
     while (++hit < ray.length && ray[hit].cell <= 0);
 
     if (hit < ray.length) {
-        RaycastRenderer_ctx.save();
         var step = ray[hit];
-        const letter = wall_text[column % wall_text.length];
         var wall = RaycastRenderer___project(1, angle, step.distance);
-
-        RaycastRenderer_ctx.globalAlpha = 1;
-
         const alpha = 1 - Math.max((step.distance + step.shading) / RayCamera_lightRange, 0);
-        RaycastRenderer_ctx.fillStyle = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + alpha + ')';
-
-        RaycastRenderer_ctx.font = wall.height + 'px Arial';
-        const metrics = RaycastRenderer_ctx.measureText(letter);
-        const text_width = metrics.width;
-        const scale = width / text_width;
-        RaycastRenderer_ctx.scale(scale, 1);
-        RaycastRenderer_ctx.fillText(letter, left / scale, wall.top + wall.height);
-        RaycastRenderer_ctx.restore();
+        els[column].style.opacity = alpha;
+        els[column].style.transform = 'scaleY(' + wall.height + ')';
     }
 };
 
 function RaycastRenderer___drawColumns() {
-    RaycastRenderer_ctx.save();
     for (var col = 0; col < RaycastRenderer_resolution; col++) {
         var angle = RayCamera_fov * (col / RaycastRenderer_resolution - 0.5);
         var ray = RayMap_Raycast(RayCamera_p, RayCamera_dir + angle, RayCamera_range);
         RaycastRenderer___drawColumn(col, ray, angle);
     }
-    RaycastRenderer_ctx.restore();
 };
 
 function RaycastRenderer_Render() {
@@ -192,6 +164,13 @@ RayCamera_dir = dir;
 RayCamera_p.x = p.x;
 RayCamera_p.y = p.y;
 
+let str = '';
+for (let i = 0; i < RaycastRenderer_resolution; i++) {
+    str += '<span>' + wall_text[i % wall_text.length] + '</span>';
+}
+document.body.innerHTML = str;
+let els = document.querySelectorAll('span');
+
 var lastTime = 0;
 var mapPos = { x: -44, y: -44 };
 function UpdateRender(time) {
@@ -199,7 +178,6 @@ function UpdateRender(time) {
     lastTime = time;
     if (seconds < 0.2) {
         update(seconds);
-        canvas.width = canvas.width;
         RaycastRenderer_Render();
     }
     requestAnimationFrame(UpdateRender);
