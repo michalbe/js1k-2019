@@ -1,4 +1,5 @@
-var CIRCLE = Math.PI * 2;
+var M = Math;
+var CIRCLE = M.PI * 2;
 const wall_text = 'JS1K';
 
 let i = -1;
@@ -23,13 +24,13 @@ function RayMap_Get(x, y) {
     return RayMap_walls[y * RayMap_width + x];
 };
 
-function RayMap_Raycast(point, angle, range) {
+function RayMap_Raycast(x, y, angle, range) {
     var cells = [];
-    var sin = Math.sin(angle);
-    var cos = Math.cos(angle);
+    var sin = M.sin(angle);
+    var cos = M.cos(angle);
 
     var stepX, stepY, nextStep;
-    nextStep = { x: point.x, y: point.y, cell: 0, distance: 0 };
+    nextStep = { x, y, cell: 0, distance: 0 };
     do {
         cells.push(nextStep);
         if (nextStep.cell > 0)
@@ -46,7 +47,7 @@ function RayMap_Raycast(point, angle, range) {
 
 function RayMap___step(rise, run, x, y, inverted) {
     if (run === 0) return { length2: Infinity };
-    var dx = run > 0 ? ~~(x + 1) - x : Math.ceil(x - 1) - x;
+    var dx = run > 0 ? ~~(x + 1) - x : M.ceil(x - 1) - x;
     var dy = dx * rise / run;
     return {
         x: inverted ? y + dy : x + dx,
@@ -60,17 +61,17 @@ function RayMap___inspect(step, shiftX, shiftY, distance, cos, sin) {
     var dy = sin < 0 ? shiftY : 0;
     var index = (((step.y - dy) | 0) * RayMap_width) + ((step.x - dx) | 0);
     step.cell = (index < 0 || index >= RayMap_walls.length) ? -1 : RayMap_walls[index];
-    step.distance = distance + Math.sqrt(step.length2);
-    // step.offset = offset - (offset | 0);
+    step.distance = distance + M.sqrt(step.length2);
     return step;
 };
 
 
-let RayCamera_fov = Math.PI * 0.4,
+let RayCamera_fov = M.PI * 0.4,
     RayCamera_range = 14,
     RayCamera_lightRange = 5,
-    RayCamera_p = { x: 0, y: 0 },
-    RayCamera_dir = Math.PI * 0.5;
+    RayCamera_p_x = 0,
+    RayCamera_p_y = 0,
+    RayCamera_dir = M.PI * 0.5;
 
 function RayCamera_Rotate(angle) {
     RayCamera_dir = (RayCamera_dir + angle + CIRCLE) % (CIRCLE);
@@ -80,7 +81,7 @@ let RaycastRenderer_height = 10,
     RaycastRenderer_resolution = 28;
 
 function RaycastRenderer___project(height, angle, distance) {
-    var z = distance * Math.cos(angle);
+    var z = distance * M.cos(angle);
     var wallHeight = RaycastRenderer_height * height / z;
     return wallHeight;
 };
@@ -93,7 +94,7 @@ function RaycastRenderer___drawColumn(column, ray, angle) {
     if (hit < ray.length) {
         var step = ray[hit];
         var wall = RaycastRenderer___project(1, angle, step.distance);
-        const alpha = 1 - Math.max((step.distance) / RayCamera_lightRange, 0);
+        const alpha = 1 - M.max((step.distance) / RayCamera_lightRange, 0);
         els[column].style.opacity = alpha;
         els[column].style.transform = 'scaleY(' + wall + ')';
     }
@@ -102,18 +103,10 @@ function RaycastRenderer___drawColumn(column, ray, angle) {
 function RaycastRenderer___drawColumns() {
     for (var col = 0; col < RaycastRenderer_resolution; col++) {
         var angle = RayCamera_fov * (col / RaycastRenderer_resolution - 0.5);
-        var ray = RayMap_Raycast(RayCamera_p, RayCamera_dir + angle, RayCamera_range);
+        var ray = RayMap_Raycast(RayCamera_p_x, RayCamera_p_y, RayCamera_dir + angle, RayCamera_range);
         RaycastRenderer___drawColumn(col, ray, angle);
     }
 };
-
-function RaycastRenderer_Render() {
-    RaycastRenderer___drawColumns();
-};
-
-function RaycastRenderer_Raycast(point, angle, range) {
-    return RayMap_Raycast(point, angle, range);
-}
 
 let Controls_codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' },
     Controls_states = { 'l': false, 'r': false, 'f': false, 'b': false };
@@ -127,29 +120,29 @@ function Controls_onKey(val, e) {
 };
 
 var p_x = 2.8, p_y = 3.7,
-    dir = Math.PI * 0.3,
+    dir = M.PI * 0.3,
     rot = (angle) => {
         dir = (dir + angle + CIRCLE) % (CIRCLE);
         RayCamera_dir = dir;
     },
     walk = (distance) => {
-        var dx = Math.cos(dir) * distance;
-        var dy = Math.sin(dir) * distance;
+        var dx = M.cos(dir) * distance;
+        var dy = M.sin(dir) * distance;
         if (RayMap_Get(p_x + dx, p_y) <= 0) p_x += dx;
         if (RayMap_Get(p_x, p_y + dy) <= 0) p_y += dy;
-        RayCamera_p.x = p_x;
-        RayCamera_p.y = p_y;
+        RayCamera_p_x = p_x;
+        RayCamera_p_y = p_y;
     },
     update = (seconds) => {
-        if (Controls_states['l']) rot(-Math.PI * seconds);
-        if (Controls_states['r']) rot(Math.PI * seconds);
+        if (Controls_states['l']) rot(-M.PI * seconds);
+        if (Controls_states['r']) rot(M.PI * seconds);
         if (Controls_states['f']) walk(3 * seconds);
         if (Controls_states['b']) walk(-3 * seconds);
     }
 
 RayCamera_dir = dir;
-RayCamera_p.x = p_x;
-RayCamera_p.y = p_y;
+RayCamera_p_x = p_x;
+RayCamera_p_y = p_y;
 
 let str = '';
 for (let i = 0; i < RaycastRenderer_resolution; i++) {
@@ -164,7 +157,7 @@ function UpdateRender(time) {
     lastTime = time;
     if (seconds < 0.2) {
         update(seconds);
-        RaycastRenderer_Render();
+        RaycastRenderer___drawColumns();
     }
     requestAnimationFrame(UpdateRender);
 }
