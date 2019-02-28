@@ -121,25 +121,18 @@ function RaycastRenderer_Raycast(point, angle, range) {
     return RayMap_Raycast(point, angle, range);
 }
 
-// Raycast Demo code
-// ==================
-// Controls and player object modified from same thing
-// as the Raycast Engine
-// ======================
-
 let Controls_codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' },
     Controls_states = { 'l': false, 'r': false, 'f': false, 'b': false };
-document.addEventListener('keydown', Controls_onKey.bind(this, true), false);
-document.addEventListener('keyup', Controls_onKey.bind(this, false), false);
+document.onkeydown = Controls_onKey.bind(this, true);
+document.onkeyup = Controls_onKey.bind(this, false);
 
 
-function Controls_onKey (val, e) {
+function Controls_onKey(val, e) {
     var state = Controls_codes[e.keyCode];
-    if (!state) return;
     Controls_states[state] = val;
 };
 
-var p = { x: 2.8, y: 3.7 },
+var p_x = 2.8, p_y = 3.7,
     dir = Math.PI * 0.3,
     rot = (angle) => {
         dir = (dir + angle + CIRCLE) % (CIRCLE);
@@ -148,10 +141,10 @@ var p = { x: 2.8, y: 3.7 },
     walk = (distance) => {
         var dx = Math.cos(dir) * distance;
         var dy = Math.sin(dir) * distance;
-        if (RayMap_Get(p.x + dx, p.y) <= 0) p.x += dx;
-        if (RayMap_Get(p.x, p.y + dy) <= 0) p.y += dy;
-        RayCamera_p.x = p.x;
-        RayCamera_p.y = p.y;
+        if (RayMap_Get(p_x + dx, p_y) <= 0) p_x += dx;
+        if (RayMap_Get(p_x, p_y + dy) <= 0) p_y += dy;
+        RayCamera_p.x = p_x;
+        RayCamera_p.y = p_y;
     },
     update = (seconds) => {
         if (Controls_states['l']) rot(-Math.PI * seconds);
@@ -161,8 +154,8 @@ var p = { x: 2.8, y: 3.7 },
     }
 
 RayCamera_dir = dir;
-RayCamera_p.x = p.x;
-RayCamera_p.y = p.y;
+RayCamera_p.x = p_x;
+RayCamera_p.y = p_y;
 
 let str = '';
 for (let i = 0; i < RaycastRenderer_resolution; i++) {
