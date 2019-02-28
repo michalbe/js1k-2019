@@ -6,7 +6,6 @@ let i = -1;
 let RayMap_walls = "e13wtdmn7n079tsf7qy20naz7gcepyazc0z1tcvvautqjrrrax1ppc9rbcytdccxd33098ltc02ythhxcevfb01r"
     .split('')
     .reduce((memo, curr, index) => {
-        memo[i]
         if (index % 8 === 0) {
             i++;
             memo[i] = '';
@@ -15,7 +14,37 @@ let RayMap_walls = "e13wtdmn7n079tsf7qy20naz7gcepyazc0z1tcvvautqjrrrax1ppc9rbcyt
         return memo;
     }, []).map((e) => parseInt(e, 36).toString(2)).join('').split(''),
     RayMap_width = 20,
-    RayMap_height = 22;
+    RayMap_height = 22,
+    RayCamera_fov = M.PI * 0.4,
+    RayCamera_range = 14,
+    RayCamera_lightRange = 5,
+    RayCamera_p_x = p_x = 2.8,
+    RayCamera_p_y = p_y = 3.7,
+    RayCamera_dir = dir = M.PI * 0.3,
+    RaycastRenderer_height = 10,
+    RaycastRenderer_resolution = 28,
+    Controls_codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' },
+    Controls_states = { 'l': false, 'r': false, 'f': false, 'b': false },
+    lastTime = 0,
+    str = '',
+    rot = (angle) => {
+        dir = (dir + angle + CIRCLE) % (CIRCLE);
+        RayCamera_dir = dir;
+    },
+    walk = (distance) => {
+        var dx = M.cos(dir) * distance;
+        var dy = M.sin(dir) * distance;
+        if (RayMap_Get(p_x + dx, p_y) <= 0) p_x += dx;
+        if (RayMap_Get(p_x, p_y + dy) <= 0) p_y += dy;
+        RayCamera_p_x = p_x;
+        RayCamera_p_y = p_y;
+    },
+    update = (seconds) => {
+        if (Controls_states['l']) rot(-M.PI * seconds);
+        if (Controls_states['r']) rot(M.PI * seconds);
+        if (Controls_states['f']) walk(3 * seconds);
+        if (Controls_states['b']) walk(-3 * seconds);
+    };
 
 function RayMap_Get(x, y) {
     x = x | 0;
@@ -46,7 +75,7 @@ function RayMap_Raycast(x, y, angle, range) {
 };
 
 function RayMap___step(rise, run, x, y, inverted) {
-    if (run === 0) return { length2: Infinity };
+    if (run === 0) return { length2: 10e5 };
     var dx = run > 0 ? ~~(x + 1) - x : M.ceil(x - 1) - x;
     var dy = dx * rise / run;
     return {
@@ -65,20 +94,9 @@ function RayMap___inspect(step, shiftX, shiftY, distance, cos, sin) {
     return step;
 };
 
-
-let RayCamera_fov = M.PI * 0.4,
-    RayCamera_range = 14,
-    RayCamera_lightRange = 5,
-    RayCamera_p_x = 0,
-    RayCamera_p_y = 0,
-    RayCamera_dir = M.PI * 0.5;
-
 function RayCamera_Rotate(angle) {
     RayCamera_dir = (RayCamera_dir + angle + CIRCLE) % (CIRCLE);
 }
-
-let RaycastRenderer_height = 10,
-    RaycastRenderer_resolution = 28;
 
 function RaycastRenderer___project(height, angle, distance) {
     var z = distance * M.cos(angle);
@@ -108,50 +126,21 @@ function RaycastRenderer___drawColumns() {
     }
 };
 
-let Controls_codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' },
-    Controls_states = { 'l': false, 'r': false, 'f': false, 'b': false };
-d.onkeydown = Controls_onKey.bind(this, true);
-d.onkeyup = Controls_onKey.bind(this, false);
-
 
 function Controls_onKey(val, e) {
     var state = Controls_codes[e.keyCode];
     Controls_states[state] = val;
 };
 
-var p_x = 2.8, p_y = 3.7,
-    dir = M.PI * 0.3,
-    rot = (angle) => {
-        dir = (dir + angle + CIRCLE) % (CIRCLE);
-        RayCamera_dir = dir;
-    },
-    walk = (distance) => {
-        var dx = M.cos(dir) * distance;
-        var dy = M.sin(dir) * distance;
-        if (RayMap_Get(p_x + dx, p_y) <= 0) p_x += dx;
-        if (RayMap_Get(p_x, p_y + dy) <= 0) p_y += dy;
-        RayCamera_p_x = p_x;
-        RayCamera_p_y = p_y;
-    },
-    update = (seconds) => {
-        if (Controls_states['l']) rot(-M.PI * seconds);
-        if (Controls_states['r']) rot(M.PI * seconds);
-        if (Controls_states['f']) walk(3 * seconds);
-        if (Controls_states['b']) walk(-3 * seconds);
-    }
-
-RayCamera_dir = dir;
-RayCamera_p_x = p_x;
-RayCamera_p_y = p_y;
-
-let str = '';
 for (let i = 0; i < RaycastRenderer_resolution; i++) {
     str += '<span>' + wall_text[i % wall_text.length] + '</span>';
 }
 b.innerHTML = str;
 let els = d.querySelectorAll('span');
 
-var lastTime = 0;
+d.onkeydown = Controls_onKey.bind(this, true);
+d.onkeyup = Controls_onKey.bind(this, false);
+
 function UpdateRender(time) {
     var seconds = (time - lastTime) / 1000;
     lastTime = time;
