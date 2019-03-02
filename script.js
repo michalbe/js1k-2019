@@ -3,28 +3,22 @@ var CIRCLE = M.PI * 2;
 const wall_text = 'JS1K';
 
 let i = -1;
-let RayMap_walls = "e13wtdmn7n079tsf7qy20naz7gcepyazc0z1tcvvautqjrrrax1ppc9rbcytdccxd33098ltc02ythhxcevfb01r"
-    .split('')
-    .reduce((memo, curr, index) => {
-        if (index % 8 === 0) {
-            i++;
-            memo[i] = '';
-        }
-        memo[i] += curr;
-        return memo;
-    }, []).map((e) => parseInt(e, 36).toString(2)).join('').split(''),
+let RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc9r,bcytdccx,d33098lt,c02ythhx,cevfb01r"
+    .split(',')
+    .map((e) => parseInt(e, 36).toString(2)).join('').split(''),
     RayMap_width = 20,
     RayMap_height = 22,
     RayCamera_fov = M.PI * 0.4,
     RayCamera_range = 14,
     RayCamera_lightRange = 5,
-    RayCamera_p_x = p_x = 2.8,
-    RayCamera_p_y = p_y = 3.7,
-    RayCamera_dir = dir = M.PI * 0.3,
+    RayCamera_p_x = p_x = 3,
+    RayCamera_p_y = p_y = 4,
+    dir,
+    RayCamera_dir = dir = RayCamera_fov,
     RaycastRenderer_height = 10,
     RaycastRenderer_resolution = 28,
     Controls_codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' },
-    Controls_states = { 'l': false, 'r': false, 'f': false, 'b': false },
+    Controls_states = { 'l': 0, 'r': 0, 'f': 0, 'b': 0 },
     lastTime = 0,
     str = '',
     rot = (angle) => {
@@ -138,8 +132,8 @@ for (let i = 0; i < RaycastRenderer_resolution; i++) {
 b.innerHTML = str;
 let els = d.querySelectorAll('span');
 
-d.onkeydown = Controls_onKey.bind(this, true);
-d.onkeyup = Controls_onKey.bind(this, false);
+d.onkeydown = Controls_onKey.bind(this, 1);
+d.onkeyup = Controls_onKey.bind(this, 0);
 
 function UpdateRender(time) {
     var seconds = (time - lastTime) / 1000;
