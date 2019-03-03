@@ -17,8 +17,8 @@ let RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc
     RayCamera_dir = dir = 0,
     RaycastRenderer_height = 9,
     RaycastRenderer_resolution = 28,
-    Controls_codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' },
-    Controls_states = { 'l': 0, 'r': 0, 'f': 0, 'b': 0 },
+    // 37 - l, 39 - r, 38 - f, 40 - b
+    Controls_states = { 37: 0, 39: 0, 38: 0, 40: 0 },
     lastTime = 0,
     str = '',
     rot = (angle) => {
@@ -34,10 +34,10 @@ let RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc
         RayCamera_p_y = p_y;
     },
     update = (seconds) => {
-        if (Controls_states['l']) rot(-M.PI * seconds);
-        if (Controls_states['r']) rot(M.PI * seconds);
-        if (Controls_states['f']) walk(3 * seconds);
-        if (Controls_states['b']) walk(-3 * seconds);
+        if (Controls_states[37]) rot(-M.PI * seconds);
+        if (Controls_states[39]) rot(M.PI * seconds);
+        if (Controls_states[38]) walk(3 * seconds);
+        if (Controls_states[40]) walk(-3 * seconds);
     };
 
 function RayMap_Get(x, y) {
@@ -122,8 +122,7 @@ function RaycastRenderer___drawColumns() {
 
 function Controls_onKey(val, e) {
     return (e) => {
-        var state = Controls_codes[e.keyCode];
-        Controls_states[state] = val;
+        Controls_states[e.keyCode] = val;
     }
 };
 
