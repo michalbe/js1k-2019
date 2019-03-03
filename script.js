@@ -1,8 +1,7 @@
 var M = Math;
+var Mcos = M.cos;
 var CIRCLE = M.PI * 2;
 const wall_text = 'JS1K';
-
-let i = -1;
 let RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc9r,bcytdccx,d33098lt,c02ythhx,cevfb01r"
     .split(',')
     .map((e) => parseInt(e, 36).toString(2)).join('').split(''),
@@ -26,7 +25,7 @@ let RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc
         RayCamera_dir = dir;
     },
     walk = (distance) => {
-        var dx = M.cos(dir) * distance;
+        var dx = Mcos(dir) * distance;
         var dy = M.sin(dir) * distance;
         if (RayMap_Get(p_x + dx, p_y) <= 0) p_x += dx;
         if (RayMap_Get(p_x, p_y + dy) <= 0) p_y += dy;
@@ -50,7 +49,7 @@ function RayMap_Get(x, y) {
 function RayMap_Raycast(x, y, angle, range) {
     var cells = [];
     var sin = M.sin(angle);
-    var cos = M.cos(angle);
+    var cos = Mcos(angle);
 
     var stepX, stepY, nextStep;
     nextStep = { x, y, cell: 0, distance: 0 };
@@ -69,10 +68,9 @@ function RayMap_Raycast(x, y, angle, range) {
 };
 
 function RayMap___step(rise, run, x, y, inverted) {
-    if (run === 0) return { length2: 10e5 };
     var dx = run > 0 ? ~~(x + 1) - x : M.ceil(x - 1) - x;
     var dy = dx * rise / run;
-    return {
+    return (run === 0) ? { length2: 9 } : {
         x: inverted ? y + dy : x + dx,
         y: inverted ? x + dx : y + dy,
         length2: dx * dx + dy * dy
@@ -93,7 +91,7 @@ function RayCamera_Rotate(angle) {
 }
 
 function RaycastRenderer___project(height, angle, distance) {
-    var z = distance * M.cos(angle);
+    var z = distance * Mcos(angle);
     var wallHeight = RaycastRenderer_height * height / z;
     return wallHeight;
 };
