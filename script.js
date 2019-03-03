@@ -2,17 +2,17 @@ var M = Math,
     Mcos = M.cos,
     CIRCLE = M.PI * 2,
     wall_text = 'JS1K',
-    RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc9r,bcytdccx,d33098lt,c02ythhx,cevfb01r"
+    RayMap_walls = "e0vm631d,aerab41j,akl6qrjj,72eh1s8j,d5hasum7"
     .split(',')
     .map((e) => parseInt(e, 36).toString(2)).join('').split(''),
-    RayMap_width = 20,
-    RayMap_height = 22,
+    RayMap_width = 10,
+    RayMap_height = 20,
     RayCamera_fov = M.PI * 0.4,
     RayCamera_range = 9,
     RayCamera_lightRange = 5,
     p_x,p_y,
-    RayCamera_p_x = p_x = 3,
-    RayCamera_p_y = p_y = 4,
+    RayCamera_p_x = p_x = 2,
+    RayCamera_p_y = p_y = 2,
     dir,
     RayCamera_dir = dir = 0,
     RaycastRenderer_height = 9,
@@ -82,7 +82,7 @@ function RayMap___inspect(step, shiftX, shiftY, distance, cos, sin) {
     var dx = cos < 0 ? shiftX : 0;
     var dy = sin < 0 ? shiftY : 0;
     var index = (((step.y - dy) | 0) * RayMap_width) + ((step.x - dx) | 0);
-    step.cell = (index < 0 || index >= 440) ? -1 : RayMap_walls[index];
+    step.cell = (index < 0 || index >= RayMap_width * RayMap_height) ? -1 : RayMap_walls[index];
     step.distance = distance + M.sqrt(step.length2);
     return step;
 };
