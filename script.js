@@ -82,7 +82,7 @@ function RayMap___inspect(step, shiftX, shiftY, distance, cos, sin) {
     var dx = cos < 0 ? shiftX : 0;
     var dy = sin < 0 ? shiftY : 0;
     var index = (((step.y - dy) | 0) * RayMap_width) + ((step.x - dx) | 0);
-    step.cell = (index < 0 || index >= RayMap_walls.length) ? -1 : RayMap_walls[index];
+    step.cell = (index < 0 || index >= 440) ? -1 : RayMap_walls[index];
     step.distance = distance + M.sqrt(step.length2);
     return step;
 };
@@ -99,7 +99,6 @@ function RaycastRenderer___project(height, angle, distance) {
 
 function RaycastRenderer___drawColumn(column, ray, angle) {
     var hit = -1;
-
     while (++hit < ray.length && ray[hit].cell <= 0);
 
     if (hit < ray.length) {
