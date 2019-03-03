@@ -10,11 +10,12 @@ let RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc
     RayCamera_fov = M.PI * 0.4,
     RayCamera_range = 14,
     RayCamera_lightRange = 5,
+    p_x,p_y,
     RayCamera_p_x = p_x = 3,
     RayCamera_p_y = p_y = 4,
     dir,
-    RayCamera_dir = dir = RayCamera_fov,
-    RaycastRenderer_height = 10,
+    RayCamera_dir = dir = 0,
+    RaycastRenderer_height = 9,
     RaycastRenderer_resolution = 28,
     Controls_codes = { 37: 'l', 39: 'r', 38: 'f', 40: 'b' },
     Controls_states = { 'l': 0, 'r': 0, 'f': 0, 'b': 0 },
@@ -120,26 +121,27 @@ function RaycastRenderer___drawColumns() {
 
 
 function Controls_onKey(val, e) {
-    var state = Controls_codes[e.keyCode];
-    Controls_states[state] = val;
+    return (e) => {
+        var state = Controls_codes[e.keyCode];
+        Controls_states[state] = val;
+    }
 };
 
 for (let i = 0; i < RaycastRenderer_resolution; i++) {
-    str += '<span>' + wall_text[i % wall_text.length] + '</span>';
+    str += '<p style="display:inline-block;margin-top:99px">' + wall_text[i % wall_text.length] + '</p>';
 }
-b.innerHTML = str;
-let els = d.querySelectorAll('span');
 
-d.onkeydown = Controls_onKey.bind(this, 1);
-d.onkeyup = Controls_onKey.bind(this, 0);
+b.innerHTML = str;
+let els = d.querySelectorAll('p');
+
+d.onkeydown = Controls_onKey(1);
+d.onkeyup = Controls_onKey(0);
 
 function UpdateRender(time) {
     var seconds = (time - lastTime) / 1000;
     lastTime = time;
-    if (seconds < 0.2) {
-        update(seconds);
-        RaycastRenderer___drawColumns();
-    }
+    update(seconds);
+    RaycastRenderer___drawColumns();
     requestAnimationFrame(UpdateRender);
 }
 UpdateRender();
