@@ -1,14 +1,14 @@
-var M = Math;
-var Mcos = M.cos;
-var CIRCLE = M.PI * 2;
-const wall_text = 'JS1K';
-let RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc9r,bcytdccx,d33098lt,c02ythhx,cevfb01r"
+var M = Math,
+    Mcos = M.cos,
+    CIRCLE = M.PI * 2,
+    wall_text = 'JS1K',
+    RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc9r,bcytdccx,d33098lt,c02ythhx,cevfb01r"
     .split(',')
     .map((e) => parseInt(e, 36).toString(2)).join('').split(''),
     RayMap_width = 20,
     RayMap_height = 22,
     RayCamera_fov = M.PI * 0.4,
-    RayCamera_range = 14,
+    RayCamera_range = 9,
     RayCamera_lightRange = 5,
     p_x,p_y,
     RayCamera_p_x = p_x = 3,
@@ -18,7 +18,7 @@ let RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc
     RaycastRenderer_height = 9,
     RaycastRenderer_resolution = 28,
     // 37 - l, 39 - r, 38 - f, 40 - b
-    Controls_states = { 37: 0, 39: 0, 38: 0, 40: 0 },
+    Controls_states = { 7: 0, 9: 0, 8: 0, 10: 0 },
     lastTime = 0,
     str = '',
     rot = (angle) => {
@@ -34,10 +34,10 @@ let RayMap_walls = "e13wtdmn,7n079tsf,7qy20naz,7gcepyaz,c0z1tcvv,autqjrrr,ax1ppc
         RayCamera_p_y = p_y;
     },
     update = (seconds) => {
-        if (Controls_states[37]) rot(-M.PI * seconds);
-        if (Controls_states[39]) rot(M.PI * seconds);
-        if (Controls_states[38]) walk(3 * seconds);
-        if (Controls_states[40]) walk(-3 * seconds);
+        if (Controls_states[7]) rot(-M.PI * seconds);
+        if (Controls_states[9]) rot(M.PI * seconds);
+        if (Controls_states[8]) walk(3 * seconds);
+        if (Controls_states[10]) walk(-3 * seconds);
     };
 
 function RayMap_Get(x, y) {
@@ -48,11 +48,11 @@ function RayMap_Get(x, y) {
 };
 
 function RayMap_Raycast(x, y, angle, range) {
-    var cells = [];
-    var sin = M.sin(angle);
-    var cos = Mcos(angle);
+    var cells = [],
+        sin = M.sin(angle),
+        cos = Mcos(angle),
+        stepX, stepY, nextStep;
 
-    var stepX, stepY, nextStep;
     nextStep = { x, y, cell: 0, distance: 0 };
     do {
         cells.push(nextStep);
@@ -91,9 +91,9 @@ function RayCamera_Rotate(angle) {
     RayCamera_dir = (RayCamera_dir + angle + CIRCLE) % (CIRCLE);
 }
 
-function RaycastRenderer___project(height, angle, distance) {
+function RaycastRenderer___project(angle, distance) {
     var z = distance * Mcos(angle);
-    var wallHeight = RaycastRenderer_height * height / z;
+    var wallHeight = RaycastRenderer_height / z;
     return wallHeight;
 };
 
@@ -103,7 +103,7 @@ function RaycastRenderer___drawColumn(column, ray, angle) {
 
     if (hit < ray.length) {
         var step = ray[hit];
-        var wall = RaycastRenderer___project(1, angle, step.distance);
+        var wall = RaycastRenderer___project(angle, step.distance);
         const alpha = 1 - M.max((step.distance) / RayCamera_lightRange, 0);
         els[column].style.opacity = alpha;
         els[column].style.transform = 'scaleY(' + wall + ')';
@@ -112,24 +112,25 @@ function RaycastRenderer___drawColumn(column, ray, angle) {
 
 function RaycastRenderer___drawColumns() {
     for (var col = 0; col < RaycastRenderer_resolution; col++) {
-        var angle = RayCamera_fov * (col / RaycastRenderer_resolution - 0.5);
-        var ray = RayMap_Raycast(RayCamera_p_x, RayCamera_p_y, RayCamera_dir + angle, RayCamera_range);
+        var angle = RayCamera_fov * (col / RaycastRenderer_resolution - 0.5),
+        ray = RayMap_Raycast(RayCamera_p_x, RayCamera_p_y, RayCamera_dir + angle, RayCamera_range);
         RaycastRenderer___drawColumn(col, ray, angle);
     }
 };
 
 
-function Controls_onKey(val, e) {
+function Controls_onKey(val) {
     return (e) => {
-        Controls_states[e.keyCode] = val;
+        Controls_states[e.keyCode%30] = val;
     }
 };
 
 for (let i = 0; i < RaycastRenderer_resolution; i++) {
-    str += '<p style="display:inline-block;margin-top:99px">' + wall_text[i % wall_text.length] + '</p>';
+    str += '<p style="display:inline-block;">' + wall_text[i % wall_text.length] + '</p>';
 }
 
 b.innerHTML = str;
+b.style.margin = '59px';
 let els = d.querySelectorAll('p');
 
 d.onkeydown = Controls_onKey(1);
